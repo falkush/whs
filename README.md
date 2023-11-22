@@ -26,3 +26,5 @@ v: decrease wormhole distance
 
 p: reset
 
+# Requirement
+Java Runtime Environment (https://www.java.com/en/download/)
