@@ -83,6 +83,10 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		double lerayon;
 		double lexw;
 		double lex1,lex2;
+		double dist2;
+		double angx1;
+		double distrem;
+		double[] vectmpx = new double[3];
 		double exitlgt,exitangle;
 		double exitangle2;
 		double[] pos2 = new double[3];
@@ -142,9 +146,7 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		double[][] newx = new double[n][n];
 		
 		double[] vec = new double[n];
-	
-		int tmpm=0;
-		
+
 		double rsin = (double)Math.sin(Math.PI/32.0);
 		double rcos = (double)Math.cos(Math.PI/32.0);
 	
@@ -221,6 +223,8 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 	    			if(holdx && bhsize>0.1d) bhsize-=0.1d;
 	    			if(holdc) whsize+=0.1d;
 	    			if(holdv && whsize>0.1d) whsize-=0.1d;
+	    			
+	    			
 			    	
 			    	if(resettot)
 			    	{
@@ -242,7 +246,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    			else
 		    			{
 		    				
-		    				
 		    				sxn=-pos[0]/dc;
 		    				syn=-pos[1]/dc;
 		    				szn=-pos[2]/dc;
@@ -251,7 +254,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    				leangle=Math.acos(dotp);
 		    				
 		    				theta=Math.PI/2d-leangle;
-		    				
 		    					
 			    				dist1=arsinh(Math.tan(theta));
 			    				ang=Math.atan(Math.sinh(0.1d-dist1));
@@ -279,34 +281,90 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			 	    			vecperp[1]/=vecperpn;
 			 	    			vecperp[2]/=vecperpn;
 			 	    			
-			 	    			exitlgt=lex2-lex1;
-			 	    			exitangle=exitlgt%bhsize;
-			 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
-			 	    			newang=Math.PI/2d+ang;
 			 	    			
-			 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
-			 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
-			 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
 			 	    			
-			 	    			pos[0]*=1/ley2;
-			 	    			pos[1]*=1/ley2;
-			 	    			pos[2]*=1/ley2;
-			 	    			
-			 	    			if(ley2>whsize)
+			 	    			if(ley2<whsize)
 			 	    			{
-			 	    				newv[0]=Math.cos(exitangle+newang)*sxn+Math.sin(exitangle+newang)*vecperp[0];
-				 	    			newv[1]=Math.cos(exitangle+newang)*syn+Math.sin(exitangle+newang)*vecperp[1];
-				 	    			newv[2]=Math.cos(exitangle+newang)*szn+Math.sin(exitangle+newang)*vecperp[2];
+			 	    			
+				 	    				exitlgt=lex2-lex1;
+					 	    			exitangle=exitlgt%bhsize;
+					 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+					 	    			newang=Math.PI/2d+ang;
+					 	    			
+					 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+					 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+					 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+					 	    			
+					 	    			pos[0]*=1/ley2;
+					 	    			pos[1]*=1/ley2;
+					 	    			pos[2]*=1/ley2;	
+				 	    				
+				 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+				 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+				 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+				 	    			
+				 	    			
+				 	    			for(j=1;j<3;j++) 
+				 	    			{
+					 	    			dotp1=newv[0]*x[0][0]+newv[1]*x[0][1]+newv[2]*x[0][2];
+					 	    			dotp2=newv[0]*x[j][0]+newv[1]*x[j][1]+newv[2]*x[j][2];
+					 	    			
+					 	    			proj[0]=x[0][0]*dotp1+x[j][0]*dotp2;
+					 	    			proj[1]=x[0][1]*dotp1+x[j][1]*dotp2;
+					 	    			proj[2]=x[0][2]*dotp1+x[j][2]*dotp2;
+					 	    			
+					 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+				 	    				
+					 	    			proj[0]/=projn;
+					 	    			proj[1]/=projn;
+					 	    			proj[2]/=projn;
+					 	    			
+					 	    			tmpl=proj[0]*x[0][0]+proj[1]*x[0][1]+proj[2]*x[0][2];
+					 	    			if(Math.abs(tmpl)>1d) ang1=0;
+					 	    			else
+					 	    			{
+						 	    			ang1=Math.acos(tmpl);
+						 	    			ang1*=Math.signum(proj[0]*x[j][0]+proj[1]*x[j][1]+proj[2]*x[j][2]);
+					 	    			}
+					 	    			for(i=0;i<3;i++)
+							    		{
+							    			newx[0][i]=x[0][i]*Math.cos(ang1)+Math.sin(ang1)*x[j][i];
+							    			newx[j][i]=x[j][i]*Math.cos(ang1)-Math.sin(ang1)*x[0][i];
+							    			x[0][i]=newx[0][i];
+							    			x[j][i]=newx[j][i];
+							    		}
+					 	    			
+				 	    			}
 			 	    			}
 			 	    			else
 			 	    			{
+			 	    				
+			 	    				flipg=!flipg;
+	
+			 	    				lex2=-Math.sqrt(lerayon*lerayon-whsize*whsize);
+			 	    				
+			 	    				angx1=Math.PI/2d - Math.asin(whsize/lerayon);
+				 	    			dist2=arsinh(Math.tan(angx1));
+				 	    			distrem=0.1d-dist1+dist2;
+				 	    			ang=Math.atan(Math.sinh(0.1d-distrem-dist1));
+				 	    			
+				 	    			exitlgt=lex2-lex1;
+				 	    			exitangle=exitlgt%bhsize;
+				 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+				 	    			newang=Math.PI/2d+ang;
+				 	    			
+				 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+				 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+				 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+				 	    			
+				 	    			pos[0]*=1/whsize;
+				 	    			pos[1]*=1/whsize;
+				 	    			pos[2]*=1/whsize;	
+			 	    				
 			 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
 			 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
 			 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
-			 	    			}
 			 	    			
-			 	    
-			    				
 			 	    			
 			 	    			for(j=1;j<3;j++) 
 			 	    			{
@@ -338,33 +396,119 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 						    			x[j][i]=newx[j][i];
 						    		}
 				 	    			
-			 	    			
-			 	    			
-			 	    			if(ley2>whsize)
-			 	    			{
-			 	    				flipg=!flipg;
-			 	    				
-			 	    				x[1][0]=-x[1][0];
-			 	    				x[1][1]=-x[1][1];
-			 	    				x[1][2]=-x[1][2];
-			 	    				
-			 	    				pos[0]*=ley2;
-				 	    			pos[1]*=ley2;
-				 	    			pos[2]*=ley2;
-			 	    				
-			 	    				ley2=whsize-(ley2-whsize);
-			 	    				
-			 	    				pos[0]/=ley2;
-				 	    			pos[1]/=ley2;
-				 	    			pos[2]/=ley2;
+			 	    			}
 				 	    			
 				 	    			
 				 	    			
+				 	    			
+			 	    			dc=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+						    	uhpy=1d/dc;
+						    	sxn=pos[0]/dc;
+			    				syn=pos[1]/dc;
+			    				szn=pos[2]/dc;
+			    				
+			    				for(j=0;j<3;j++) {
+				    				dotp=sxn*x[j][0]+syn*x[j][1]+szn*x[j][2];	
+				    				
+				    				vectmpx[0]=sxn*dotp;
+				    				vectmpx[1]=syn*dotp;
+				    				vectmpx[2]=szn*dotp;
+				    				
+				    				x[j][0]-=2d*vectmpx[0];
+				    				x[j][1]-=2d*vectmpx[1];
+				    				x[j][2]-=2d*vectmpx[2];
+			    				}
+			    				
+			    				sxn=-pos[0]/dc;
+			    				syn=-pos[1]/dc;
+			    				szn=-pos[2]/dc;
+			    				
+			    				dotp=sxn*x[0][0]+syn*x[0][1]+szn*x[0][2];
+			    				leangle=Math.acos(dotp);
+			    				
+			    				theta=Math.PI/2d-leangle;
+			    					
+				    				dist1=arsinh(Math.tan(theta));
+				    				ang=Math.atan(Math.sinh(distrem-dist1));
+				    				
+				    				lerayon=uhpy/Math.sin(Math.PI/2d+theta);
+				    				
+				    				lex1=lerayon*Math.cos(Math.PI/2d+theta);
+				    				
+				    				lex2=lerayon*Math.cos(Math.PI/2d-ang);
+				    				ley2=lerayon*Math.sin(Math.PI/2d-ang);
+				    				
+				    				sxn=-sxn;
+				    				syn=-syn;
+				    				szn=-szn;
+				    				dotp=-dotp;
+				    				leangle=Math.acos(dotp);
+				    				
+				    				vecperp[0]=x[0][0]-dotp*sxn;
+				 	    			vecperp[1]=x[0][1]-dotp*syn;
+				 	    			vecperp[2]=x[0][2]-dotp*szn;
+				 	    				
+				 	    			vecperpn = Math.sqrt(vecperp[0]*vecperp[0]+vecperp[1]*vecperp[1]+vecperp[2]*vecperp[2]);
+				 	    				
+				 	    			vecperp[0]/=vecperpn;
+				 	    			vecperp[1]/=vecperpn;
+				 	    			vecperp[2]/=vecperpn;
+
+				 	    			
+					 	    				exitlgt=lex2-lex1;
+						 	    			exitangle=exitlgt%bhsize;
+						 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+						 	    			newang=Math.PI/2d+ang;
+						 	    			
+						 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+						 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+						 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+						 	    			
+						 	    			pos[0]*=1/ley2;
+						 	    			pos[1]*=1/ley2;
+						 	    			pos[2]*=1/ley2;	
+					 	    				
+					 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+					 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+					 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+					 	    			
+					 	    			
+					 	    			for(j=1;j<3;j++) 
+					 	    			{
+						 	    			dotp1=newv[0]*x[0][0]+newv[1]*x[0][1]+newv[2]*x[0][2];
+						 	    			dotp2=newv[0]*x[j][0]+newv[1]*x[j][1]+newv[2]*x[j][2];
+						 	    			
+						 	    			proj[0]=x[0][0]*dotp1+x[j][0]*dotp2;
+						 	    			proj[1]=x[0][1]*dotp1+x[j][1]*dotp2;
+						 	    			proj[2]=x[0][2]*dotp1+x[j][2]*dotp2;
+						 	    			
+						 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+					 	    				
+						 	    			proj[0]/=projn;
+						 	    			proj[1]/=projn;
+						 	    			proj[2]/=projn;
+						 	    			
+						 	    			tmpl=proj[0]*x[0][0]+proj[1]*x[0][1]+proj[2]*x[0][2];
+						 	    			if(Math.abs(tmpl)>1d) ang1=0;
+						 	    			else
+						 	    			{
+							 	    			ang1=Math.acos(tmpl);
+							 	    			ang1*=Math.signum(proj[0]*x[j][0]+proj[1]*x[j][1]+proj[2]*x[j][2]);
+						 	    			}
+						 	    			for(i=0;i<3;i++)
+								    		{
+								    			newx[0][i]=x[0][i]*Math.cos(ang1)+Math.sin(ang1)*x[j][i];
+								    			newx[j][i]=x[j][i]*Math.cos(ang1)-Math.sin(ang1)*x[0][i];
+								    			x[0][i]=newx[0][i];
+								    			x[j][i]=newx[j][i];
+								    		}
+						 	    			
+					 	    			}
 			 	    			}
 			 	    			
 			 	    			
 		    				}
-		    			}
+		    			
 		    			 
 		    			 
 		    			 
@@ -379,9 +523,9 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    			}
 		    			else
 		    			{
-		    				x[0][0]=-x[0][0];
-		    				x[0][1]=-x[0][1];
-		    				x[0][2]=-x[0][2];
+		    				x[0][0]*=-1d;
+		    				x[0][1]*=-1d;
+		    				x[0][2]*=-1d;
 		    				
 		    				sxn=-pos[0]/dc;
 		    				syn=-pos[1]/dc;
@@ -391,7 +535,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    				leangle=Math.acos(dotp);
 		    				
 		    				theta=Math.PI/2d-leangle;
-		    				
 		    					
 			    				dist1=arsinh(Math.tan(theta));
 			    				ang=Math.atan(Math.sinh(0.1d-dist1));
@@ -419,34 +562,90 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			 	    			vecperp[1]/=vecperpn;
 			 	    			vecperp[2]/=vecperpn;
 			 	    			
-			 	    			exitlgt=lex2-lex1;
-			 	    			exitangle=exitlgt%bhsize;
-			 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
-			 	    			newang=Math.PI/2d+ang;
 			 	    			
-			 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
-			 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
-			 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
 			 	    			
-			 	    			pos[0]*=1/ley2;
-			 	    			pos[1]*=1/ley2;
-			 	    			pos[2]*=1/ley2;
-			 	    			
-			 	    			if(ley2>whsize)
+			 	    			if(ley2<whsize)
 			 	    			{
-			 	    				newv[0]=Math.cos(exitangle+newang)*sxn+Math.sin(exitangle+newang)*vecperp[0];
-				 	    			newv[1]=Math.cos(exitangle+newang)*syn+Math.sin(exitangle+newang)*vecperp[1];
-				 	    			newv[2]=Math.cos(exitangle+newang)*szn+Math.sin(exitangle+newang)*vecperp[2];
+			 	    			
+				 	    				exitlgt=lex2-lex1;
+					 	    			exitangle=exitlgt%bhsize;
+					 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+					 	    			newang=Math.PI/2d+ang;
+					 	    			
+					 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+					 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+					 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+					 	    			
+					 	    			pos[0]*=1/ley2;
+					 	    			pos[1]*=1/ley2;
+					 	    			pos[2]*=1/ley2;	
+				 	    				
+				 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+				 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+				 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+				 	    			
+				 	    			
+				 	    			for(j=1;j<3;j++) 
+				 	    			{
+					 	    			dotp1=newv[0]*x[0][0]+newv[1]*x[0][1]+newv[2]*x[0][2];
+					 	    			dotp2=newv[0]*x[j][0]+newv[1]*x[j][1]+newv[2]*x[j][2];
+					 	    			
+					 	    			proj[0]=x[0][0]*dotp1+x[j][0]*dotp2;
+					 	    			proj[1]=x[0][1]*dotp1+x[j][1]*dotp2;
+					 	    			proj[2]=x[0][2]*dotp1+x[j][2]*dotp2;
+					 	    			
+					 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+				 	    				
+					 	    			proj[0]/=projn;
+					 	    			proj[1]/=projn;
+					 	    			proj[2]/=projn;
+					 	    			
+					 	    			tmpl=proj[0]*x[0][0]+proj[1]*x[0][1]+proj[2]*x[0][2];
+					 	    			if(Math.abs(tmpl)>1d) ang1=0;
+					 	    			else
+					 	    			{
+						 	    			ang1=Math.acos(tmpl);
+						 	    			ang1*=Math.signum(proj[0]*x[j][0]+proj[1]*x[j][1]+proj[2]*x[j][2]);
+					 	    			}
+					 	    			for(i=0;i<3;i++)
+							    		{
+							    			newx[0][i]=x[0][i]*Math.cos(ang1)+Math.sin(ang1)*x[j][i];
+							    			newx[j][i]=x[j][i]*Math.cos(ang1)-Math.sin(ang1)*x[0][i];
+							    			x[0][i]=newx[0][i];
+							    			x[j][i]=newx[j][i];
+							    		}
+					 	    			
+				 	    			}
 			 	    			}
 			 	    			else
 			 	    			{
+			 	    				
+			 	    				flipg=!flipg;
+	
+			 	    				lex2=-Math.sqrt(lerayon*lerayon-whsize*whsize);
+			 	    				
+			 	    				angx1=Math.PI/2d - Math.asin(whsize/lerayon);
+				 	    			dist2=arsinh(Math.tan(angx1));
+				 	    			distrem=0.1d-dist1+dist2;
+				 	    			ang=Math.atan(Math.sinh(0.1d-distrem-dist1));
+				 	    			
+				 	    			exitlgt=lex2-lex1;
+				 	    			exitangle=exitlgt%bhsize;
+				 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+				 	    			newang=Math.PI/2d+ang;
+				 	    			
+				 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+				 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+				 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+				 	    			
+				 	    			pos[0]*=1/whsize;
+				 	    			pos[1]*=1/whsize;
+				 	    			pos[2]*=1/whsize;	
+			 	    				
 			 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
 			 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
 			 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
-			 	    			}
 			 	    			
-			 	    
-			    				
 			 	    			
 			 	    			for(j=1;j<3;j++) 
 			 	    			{
@@ -478,36 +677,121 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 						    			x[j][i]=newx[j][i];
 						    		}
 				 	    			
-			 	    			
-			 	    			
-			 	    			if(ley2>whsize)
-			 	    			{
-			 	    				flipg=!flipg;
-			 	    				
-			 	    				x[1][0]=-x[1][0];
-			 	    				x[1][1]=-x[1][1];
-			 	    				x[1][2]=-x[1][2];
-			 	    				
-			 	    				pos[0]*=ley2;
-				 	    			pos[1]*=ley2;
-				 	    			pos[2]*=ley2;
-			 	    				
-			 	    				ley2=whsize-(ley2-whsize);
-			 	    				
-			 	    				pos[0]/=ley2;
-				 	    			pos[1]/=ley2;
-				 	    			pos[2]/=ley2;
+			 	    			}
 				 	    			
 				 	    			
 				 	    			
+				 	    			
+			 	    			dc=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+						    	uhpy=1d/dc;
+						    	sxn=pos[0]/dc;
+			    				syn=pos[1]/dc;
+			    				szn=pos[2]/dc;
+			    				
+			    				for(j=0;j<3;j++) {
+				    				dotp=sxn*x[j][0]+syn*x[j][1]+szn*x[j][2];	
+				    				
+				    				vectmpx[0]=sxn*dotp;
+				    				vectmpx[1]=syn*dotp;
+				    				vectmpx[2]=szn*dotp;
+				    				
+				    				x[j][0]-=2d*vectmpx[0];
+				    				x[j][1]-=2d*vectmpx[1];
+				    				x[j][2]-=2d*vectmpx[2];
+			    				}
+			    				
+			    				sxn=-pos[0]/dc;
+			    				syn=-pos[1]/dc;
+			    				szn=-pos[2]/dc;
+			    				
+			    				dotp=sxn*x[0][0]+syn*x[0][1]+szn*x[0][2];
+			    				leangle=Math.acos(dotp);
+			    				
+			    				theta=Math.PI/2d-leangle;
+			    					
+				    				dist1=arsinh(Math.tan(theta));
+				    				ang=Math.atan(Math.sinh(distrem-dist1));
+				    				
+				    				lerayon=uhpy/Math.sin(Math.PI/2d+theta);
+				    				
+				    				lex1=lerayon*Math.cos(Math.PI/2d+theta);
+				    				
+				    				lex2=lerayon*Math.cos(Math.PI/2d-ang);
+				    				ley2=lerayon*Math.sin(Math.PI/2d-ang);
+				    				
+				    				sxn=-sxn;
+				    				syn=-syn;
+				    				szn=-szn;
+				    				dotp=-dotp;
+				    				leangle=Math.acos(dotp);
+				    				
+				    				vecperp[0]=x[0][0]-dotp*sxn;
+				 	    			vecperp[1]=x[0][1]-dotp*syn;
+				 	    			vecperp[2]=x[0][2]-dotp*szn;
+				 	    				
+				 	    			vecperpn = Math.sqrt(vecperp[0]*vecperp[0]+vecperp[1]*vecperp[1]+vecperp[2]*vecperp[2]);
+				 	    				
+				 	    			vecperp[0]/=vecperpn;
+				 	    			vecperp[1]/=vecperpn;
+				 	    			vecperp[2]/=vecperpn;
+
+				 	    			
+					 	    				exitlgt=lex2-lex1;
+						 	    			exitangle=exitlgt%bhsize;
+						 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+						 	    			newang=Math.PI/2d+ang;
+						 	    			
+						 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+						 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+						 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+						 	    			
+						 	    			pos[0]*=1/ley2;
+						 	    			pos[1]*=1/ley2;
+						 	    			pos[2]*=1/ley2;	
+					 	    				
+					 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+					 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+					 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+					 	    			
+					 	    			
+					 	    			for(j=1;j<3;j++) 
+					 	    			{
+						 	    			dotp1=newv[0]*x[0][0]+newv[1]*x[0][1]+newv[2]*x[0][2];
+						 	    			dotp2=newv[0]*x[j][0]+newv[1]*x[j][1]+newv[2]*x[j][2];
+						 	    			
+						 	    			proj[0]=x[0][0]*dotp1+x[j][0]*dotp2;
+						 	    			proj[1]=x[0][1]*dotp1+x[j][1]*dotp2;
+						 	    			proj[2]=x[0][2]*dotp1+x[j][2]*dotp2;
+						 	    			
+						 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+					 	    				
+						 	    			proj[0]/=projn;
+						 	    			proj[1]/=projn;
+						 	    			proj[2]/=projn;
+						 	    			
+						 	    			tmpl=proj[0]*x[0][0]+proj[1]*x[0][1]+proj[2]*x[0][2];
+						 	    			if(Math.abs(tmpl)>1d) ang1=0;
+						 	    			else
+						 	    			{
+							 	    			ang1=Math.acos(tmpl);
+							 	    			ang1*=Math.signum(proj[0]*x[j][0]+proj[1]*x[j][1]+proj[2]*x[j][2]);
+						 	    			}
+						 	    			for(i=0;i<3;i++)
+								    		{
+								    			newx[0][i]=x[0][i]*Math.cos(ang1)+Math.sin(ang1)*x[j][i];
+								    			newx[j][i]=x[j][i]*Math.cos(ang1)-Math.sin(ang1)*x[0][i];
+								    			x[0][i]=newx[0][i];
+								    			x[j][i]=newx[j][i];
+								    		}
+						 	    			
+					 	    			}
 			 	    			}
 			 	    			
-			 	    			
+			 	    			x[0][0]*=-1d;
+			    				x[0][1]*=-1d;
+			    				x[0][2]*=-1d;
 		    				}
-			 	    			x[0][0]=-x[0][0];
-			    				x[0][1]=-x[0][1];
-			    				x[0][2]=-x[0][2];
-		    			}
+
 		    		}
 		    		if(holda)
 		    		{
@@ -519,9 +803,10 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    			}
 		    			else
 		    			{
-		    				x[1][0]=-x[1][0];
-		    				x[1][1]=-x[1][1];
-		    				x[1][2]=-x[1][2];
+		    				
+		    				x[1][0]*=-1d;
+		    				x[1][1]*=-1d;
+		    				x[1][2]*=-1d;
 		    				
 		    				sxn=-pos[0]/dc;
 		    				syn=-pos[1]/dc;
@@ -531,7 +816,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    				leangle=Math.acos(dotp);
 		    				
 		    				theta=Math.PI/2d-leangle;
-		    				
 		    					
 			    				dist1=arsinh(Math.tan(theta));
 			    				ang=Math.atan(Math.sinh(0.1d-dist1));
@@ -559,34 +843,90 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			 	    			vecperp[1]/=vecperpn;
 			 	    			vecperp[2]/=vecperpn;
 			 	    			
-			 	    			exitlgt=lex2-lex1;
-			 	    			exitangle=exitlgt%bhsize;
-			 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
-			 	    			newang=Math.PI/2d+ang;
 			 	    			
-			 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
-			 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
-			 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
 			 	    			
-			 	    			pos[0]*=1/ley2;
-			 	    			pos[1]*=1/ley2;
-			 	    			pos[2]*=1/ley2;
-			 	    			
-			 	    			if(ley2>whsize)
+			 	    			if(ley2<whsize)
 			 	    			{
-			 	    				newv[0]=Math.cos(exitangle+newang)*sxn+Math.sin(exitangle+newang)*vecperp[0];
-				 	    			newv[1]=Math.cos(exitangle+newang)*syn+Math.sin(exitangle+newang)*vecperp[1];
-				 	    			newv[2]=Math.cos(exitangle+newang)*szn+Math.sin(exitangle+newang)*vecperp[2];
+			 	    			
+				 	    				exitlgt=lex2-lex1;
+					 	    			exitangle=exitlgt%bhsize;
+					 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+					 	    			newang=Math.PI/2d+ang;
+					 	    			
+					 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+					 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+					 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+					 	    			
+					 	    			pos[0]*=1/ley2;
+					 	    			pos[1]*=1/ley2;
+					 	    			pos[2]*=1/ley2;	
+				 	    				
+				 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+				 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+				 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+				 	    			
+				 	    			
+				 	    			for(j=0;j<2;j++) 
+				 	    			{
+					 	    			dotp1=newv[0]*x[1][0]+newv[1]*x[1][1]+newv[2]*x[1][2];
+					 	    			dotp2=newv[0]*x[others[1][j]][0]+newv[1]*x[others[1][j]][1]+newv[2]*x[others[1][j]][2];
+					 	    			
+					 	    			proj[0]=x[1][0]*dotp1+x[others[1][j]][0]*dotp2;
+					 	    			proj[1]=x[1][1]*dotp1+x[others[1][j]][1]*dotp2;
+					 	    			proj[2]=x[1][2]*dotp1+x[others[1][j]][2]*dotp2;
+					 	    			
+					 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+				 	    				
+					 	    			proj[0]/=projn;
+					 	    			proj[1]/=projn;
+					 	    			proj[2]/=projn;
+					 	    			
+					 	    			tmpl=proj[0]*x[1][0]+proj[1]*x[1][1]+proj[2]*x[1][2];
+					 	    			if(Math.abs(tmpl)>1d) ang1=0;
+					 	    			else
+					 	    			{
+						 	    			ang1=Math.acos(tmpl);
+						 	    			ang1*=Math.signum(proj[0]*x[others[1][j]][0]+proj[1]*x[others[1][j]][1]+proj[2]*x[others[1][j]][2]);
+					 	    			}
+					 	    			for(i=0;i<3;i++)
+							    		{
+							    			newx[1][i]=x[1][i]*Math.cos(ang1)+Math.sin(ang1)*x[others[1][j]][i];
+							    			newx[others[1][j]][i]=x[others[1][j]][i]*Math.cos(ang1)-Math.sin(ang1)*x[1][i];
+							    			x[1][i]=newx[1][i];
+							    			x[others[1][j]][i]=newx[others[1][j]][i];
+							    		}
+					 	    			
+				 	    			}
 			 	    			}
 			 	    			else
 			 	    			{
+			 	    				
+			 	    				flipg=!flipg;
+	
+			 	    				lex2=-Math.sqrt(lerayon*lerayon-whsize*whsize);
+			 	    				
+			 	    				angx1=Math.PI/2d - Math.asin(whsize/lerayon);
+				 	    			dist2=arsinh(Math.tan(angx1));
+				 	    			distrem=0.1d-dist1+dist2;
+				 	    			ang=Math.atan(Math.sinh(0.1d-distrem-dist1));
+				 	    			
+				 	    			exitlgt=lex2-lex1;
+				 	    			exitangle=exitlgt%bhsize;
+				 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+				 	    			newang=Math.PI/2d+ang;
+				 	    			
+				 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+				 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+				 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+				 	    			
+				 	    			pos[0]*=1/whsize;
+				 	    			pos[1]*=1/whsize;
+				 	    			pos[2]*=1/whsize;	
+			 	    				
 			 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
 			 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
 			 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
-			 	    			}
 			 	    			
-			 	    
-			    				
 			 	    			
 			 	    			for(j=0;j<2;j++) 
 			 	    			{
@@ -618,44 +958,120 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 						    			x[others[1][j]][i]=newx[others[1][j]][i];
 						    		}
 				 	    			
-			 	    			
-			 	    			
-			 	    			if(ley2>whsize)
-			 	    			{
-			 	    				flipg=!flipg;
-			 	    				
-			 	    				x[1][0]=-x[1][0];
-			 	    				x[1][1]=-x[1][1];
-			 	    				x[1][2]=-x[1][2];
-			 	    				
-			 	    				x[0][0]=-x[0][0];
-			 	    				x[0][1]=-x[0][1];
-			 	    				x[0][2]=-x[0][2];
-			 	    				
-			 	    				x[2][0]=-x[2][0];
-			 	    				x[2][1]=-x[2][1];
-			 	    				x[2][2]=-x[2][2];
-			 	    				
-			 	    				pos[0]*=ley2;
-				 	    			pos[1]*=ley2;
-				 	    			pos[2]*=ley2;
-			 	    				
-			 	    				ley2=whsize-(ley2-whsize);
-			 	    				
-			 	    				pos[0]/=ley2;
-				 	    			pos[1]/=ley2;
-				 	    			pos[2]/=ley2;
-				 	    			
-				 	    			
-				 	    			
 			 	    			}
-			 	    			
+				 	    			
+				 	    			
+				 	    			
+				 	    			
+			 	    			dc=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+						    	uhpy=1d/dc;
+						    	sxn=pos[0]/dc;
+			    				syn=pos[1]/dc;
+			    				szn=pos[2]/dc;
+			    				
+			    				for(j=0;j<3;j++) {
+				    				dotp=sxn*x[j][0]+syn*x[j][1]+szn*x[j][2];	
+				    				
+				    				vectmpx[0]=sxn*dotp;
+				    				vectmpx[1]=syn*dotp;
+				    				vectmpx[2]=szn*dotp;
+				    				
+				    				x[j][0]-=2d*vectmpx[0];
+				    				x[j][1]-=2d*vectmpx[1];
+				    				x[j][2]-=2d*vectmpx[2];
+			    				}
+			    				
+			    				sxn=-pos[0]/dc;
+			    				syn=-pos[1]/dc;
+			    				szn=-pos[2]/dc;
+			    				
+			    				dotp=sxn*x[1][0]+syn*x[1][1]+szn*x[1][2];
+			    				leangle=Math.acos(dotp);
+			    				
+			    				theta=Math.PI/2d-leangle;
+			    					
+				    				dist1=arsinh(Math.tan(theta));
+				    				ang=Math.atan(Math.sinh(distrem-dist1));
+				    				
+				    				lerayon=uhpy/Math.sin(Math.PI/2d+theta);
+				    				
+				    				lex1=lerayon*Math.cos(Math.PI/2d+theta);
+				    				
+				    				lex2=lerayon*Math.cos(Math.PI/2d-ang);
+				    				ley2=lerayon*Math.sin(Math.PI/2d-ang);
+				    				
+				    				sxn=-sxn;
+				    				syn=-syn;
+				    				szn=-szn;
+				    				dotp=-dotp;
+				    				leangle=Math.acos(dotp);
+				    				
+				    				vecperp[0]=x[1][0]-dotp*sxn;
+				 	    			vecperp[1]=x[1][1]-dotp*syn;
+				 	    			vecperp[2]=x[1][2]-dotp*szn;
+				 	    				
+				 	    			vecperpn = Math.sqrt(vecperp[0]*vecperp[0]+vecperp[1]*vecperp[1]+vecperp[2]*vecperp[2]);
+				 	    				
+				 	    			vecperp[0]/=vecperpn;
+				 	    			vecperp[1]/=vecperpn;
+				 	    			vecperp[2]/=vecperpn;
+
+				 	    			
+					 	    				exitlgt=lex2-lex1;
+						 	    			exitangle=exitlgt%bhsize;
+						 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+						 	    			newang=Math.PI/2d+ang;
+						 	    			
+						 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+						 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+						 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+						 	    			
+						 	    			pos[0]*=1/ley2;
+						 	    			pos[1]*=1/ley2;
+						 	    			pos[2]*=1/ley2;	
+					 	    				
+					 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+					 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+					 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+					 	    			
+					 	    			
+					 	    			for(j=0;j<2;j++) 
+					 	    			{
+						 	    			dotp1=newv[0]*x[1][0]+newv[1]*x[1][1]+newv[2]*x[1][2];
+						 	    			dotp2=newv[0]*x[others[1][j]][0]+newv[1]*x[others[1][j]][1]+newv[2]*x[others[1][j]][2];
+						 	    			
+						 	    			proj[0]=x[1][0]*dotp1+x[others[1][j]][0]*dotp2;
+						 	    			proj[1]=x[1][1]*dotp1+x[others[1][j]][1]*dotp2;
+						 	    			proj[2]=x[1][2]*dotp1+x[others[1][j]][2]*dotp2;
+						 	    			
+						 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+					 	    				
+						 	    			proj[0]/=projn;
+						 	    			proj[1]/=projn;
+						 	    			proj[2]/=projn;
+						 	    			
+						 	    			tmpl=proj[0]*x[1][0]+proj[1]*x[1][1]+proj[2]*x[1][2];
+						 	    			if(Math.abs(tmpl)>1d) ang1=0;
+						 	    			else
+						 	    			{
+							 	    			ang1=Math.acos(tmpl);
+							 	    			ang1*=Math.signum(proj[0]*x[others[1][j]][0]+proj[1]*x[others[1][j]][1]+proj[2]*x[others[1][j]][2]);
+						 	    			}
+						 	    			for(i=0;i<3;i++)
+								    		{
+								    			newx[1][i]=x[1][i]*Math.cos(ang1)+Math.sin(ang1)*x[others[1][j]][i];
+								    			newx[others[1][j]][i]=x[others[1][j]][i]*Math.cos(ang1)-Math.sin(ang1)*x[1][i];
+								    			x[1][i]=newx[1][i];
+								    			x[others[1][j]][i]=newx[others[1][j]][i];
+								    		}
+						 	    			
+					 	    			}
+			 	    			}
+			 	    			x[1][0]*=-1d;
+			    				x[1][1]*=-1d;
+			    				x[1][2]*=-1d;
 			 	    			
 		    				}
-			 	    			x[1][0]=-x[1][0];
-			    				x[1][1]=-x[1][1];
-			    				x[1][2]=-x[1][2];
-		    			}
 		    		}
 		    		if(holdd) 
 		    		{
@@ -668,7 +1084,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    			else
 		    			{
 		    				
-		    				
 		    				sxn=-pos[0]/dc;
 		    				syn=-pos[1]/dc;
 		    				szn=-pos[2]/dc;
@@ -677,7 +1092,6 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    				leangle=Math.acos(dotp);
 		    				
 		    				theta=Math.PI/2d-leangle;
-		    				
 		    					
 			    				dist1=arsinh(Math.tan(theta));
 			    				ang=Math.atan(Math.sinh(0.1d-dist1));
@@ -705,34 +1119,90 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			 	    			vecperp[1]/=vecperpn;
 			 	    			vecperp[2]/=vecperpn;
 			 	    			
-			 	    			exitlgt=lex2-lex1;
-			 	    			exitangle=exitlgt%bhsize;
-			 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
-			 	    			newang=Math.PI/2d+ang;
 			 	    			
-			 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
-			 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
-			 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
 			 	    			
-			 	    			pos[0]*=1/ley2;
-			 	    			pos[1]*=1/ley2;
-			 	    			pos[2]*=1/ley2;
-			 	    			
-			 	    			if(ley2>whsize)
+			 	    			if(ley2<whsize)
 			 	    			{
-			 	    				newv[0]=Math.cos(exitangle+newang)*sxn+Math.sin(exitangle+newang)*vecperp[0];
-				 	    			newv[1]=Math.cos(exitangle+newang)*syn+Math.sin(exitangle+newang)*vecperp[1];
-				 	    			newv[2]=Math.cos(exitangle+newang)*szn+Math.sin(exitangle+newang)*vecperp[2];
+			 	    			
+				 	    				exitlgt=lex2-lex1;
+					 	    			exitangle=exitlgt%bhsize;
+					 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+					 	    			newang=Math.PI/2d+ang;
+					 	    			
+					 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+					 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+					 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+					 	    			
+					 	    			pos[0]*=1/ley2;
+					 	    			pos[1]*=1/ley2;
+					 	    			pos[2]*=1/ley2;	
+				 	    				
+				 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+				 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+				 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+				 	    			
+				 	    			
+				 	    			for(j=0;j<2;j++) 
+				 	    			{
+					 	    			dotp1=newv[0]*x[1][0]+newv[1]*x[1][1]+newv[2]*x[1][2];
+					 	    			dotp2=newv[0]*x[others[1][j]][0]+newv[1]*x[others[1][j]][1]+newv[2]*x[others[1][j]][2];
+					 	    			
+					 	    			proj[0]=x[1][0]*dotp1+x[others[1][j]][0]*dotp2;
+					 	    			proj[1]=x[1][1]*dotp1+x[others[1][j]][1]*dotp2;
+					 	    			proj[2]=x[1][2]*dotp1+x[others[1][j]][2]*dotp2;
+					 	    			
+					 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+				 	    				
+					 	    			proj[0]/=projn;
+					 	    			proj[1]/=projn;
+					 	    			proj[2]/=projn;
+					 	    			
+					 	    			tmpl=proj[0]*x[1][0]+proj[1]*x[1][1]+proj[2]*x[1][2];
+					 	    			if(Math.abs(tmpl)>1d) ang1=0;
+					 	    			else
+					 	    			{
+						 	    			ang1=Math.acos(tmpl);
+						 	    			ang1*=Math.signum(proj[0]*x[others[1][j]][0]+proj[1]*x[others[1][j]][1]+proj[2]*x[others[1][j]][2]);
+					 	    			}
+					 	    			for(i=0;i<3;i++)
+							    		{
+							    			newx[1][i]=x[1][i]*Math.cos(ang1)+Math.sin(ang1)*x[others[1][j]][i];
+							    			newx[others[1][j]][i]=x[others[1][j]][i]*Math.cos(ang1)-Math.sin(ang1)*x[1][i];
+							    			x[1][i]=newx[1][i];
+							    			x[others[1][j]][i]=newx[others[1][j]][i];
+							    		}
+					 	    			
+				 	    			}
 			 	    			}
 			 	    			else
 			 	    			{
+			 	    				
+			 	    				flipg=!flipg;
+	
+			 	    				lex2=-Math.sqrt(lerayon*lerayon-whsize*whsize);
+			 	    				
+			 	    				angx1=Math.PI/2d - Math.asin(whsize/lerayon);
+				 	    			dist2=arsinh(Math.tan(angx1));
+				 	    			distrem=0.1d-dist1+dist2;
+				 	    			ang=Math.atan(Math.sinh(0.1d-distrem-dist1));
+				 	    			
+				 	    			exitlgt=lex2-lex1;
+				 	    			exitangle=exitlgt%bhsize;
+				 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+				 	    			newang=Math.PI/2d+ang;
+				 	    			
+				 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+				 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+				 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+				 	    			
+				 	    			pos[0]*=1/whsize;
+				 	    			pos[1]*=1/whsize;
+				 	    			pos[2]*=1/whsize;	
+			 	    				
 			 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
 			 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
 			 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
-			 	    			}
 			 	    			
-			 	    
-			    				
 			 	    			
 			 	    			for(j=0;j<2;j++) 
 			 	    			{
@@ -764,41 +1234,118 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 						    			x[others[1][j]][i]=newx[others[1][j]][i];
 						    		}
 				 	    			
-			 	    			
-			 	    			
-			 	    			if(ley2>whsize)
-			 	    			{
-			 	    				flipg=!flipg;
-			 	    				
-			 	    				x[1][0]=-x[1][0];
-			 	    				x[1][1]=-x[1][1];
-			 	    				x[1][2]=-x[1][2];
-			 	    				
-			 	    				x[0][0]=-x[0][0];
-			 	    				x[0][1]=-x[0][1];
-			 	    				x[0][2]=-x[0][2];
-			 	    				
-			 	    				x[2][0]=-x[2][0];
-			 	    				x[2][1]=-x[2][1];
-			 	    				x[2][2]=-x[2][2];
-			 	    				
-			 	    				pos[0]*=ley2;
-				 	    			pos[1]*=ley2;
-				 	    			pos[2]*=ley2;
-			 	    				
-			 	    				ley2=whsize-(ley2-whsize);
-			 	    				
-			 	    				pos[0]/=ley2;
-				 	    			pos[1]/=ley2;
-				 	    			pos[2]/=ley2;
+			 	    			}
 				 	    			
 				 	    			
 				 	    			
+				 	    			
+			 	    			dc=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+						    	uhpy=1d/dc;
+						    	sxn=pos[0]/dc;
+			    				syn=pos[1]/dc;
+			    				szn=pos[2]/dc;
+			    				
+			    				for(j=0;j<3;j++) {
+				    				dotp=sxn*x[j][0]+syn*x[j][1]+szn*x[j][2];	
+				    				
+				    				vectmpx[0]=sxn*dotp;
+				    				vectmpx[1]=syn*dotp;
+				    				vectmpx[2]=szn*dotp;
+				    				
+				    				x[j][0]-=2d*vectmpx[0];
+				    				x[j][1]-=2d*vectmpx[1];
+				    				x[j][2]-=2d*vectmpx[2];
+			    				}
+			    				
+			    				sxn=-pos[0]/dc;
+			    				syn=-pos[1]/dc;
+			    				szn=-pos[2]/dc;
+			    				
+			    				dotp=sxn*x[1][0]+syn*x[1][1]+szn*x[1][2];
+			    				leangle=Math.acos(dotp);
+			    				
+			    				theta=Math.PI/2d-leangle;
+			    					
+				    				dist1=arsinh(Math.tan(theta));
+				    				ang=Math.atan(Math.sinh(distrem-dist1));
+				    				
+				    				lerayon=uhpy/Math.sin(Math.PI/2d+theta);
+				    				
+				    				lex1=lerayon*Math.cos(Math.PI/2d+theta);
+				    				
+				    				lex2=lerayon*Math.cos(Math.PI/2d-ang);
+				    				ley2=lerayon*Math.sin(Math.PI/2d-ang);
+				    				
+				    				sxn=-sxn;
+				    				syn=-syn;
+				    				szn=-szn;
+				    				dotp=-dotp;
+				    				leangle=Math.acos(dotp);
+				    				
+				    				vecperp[0]=x[1][0]-dotp*sxn;
+				 	    			vecperp[1]=x[1][1]-dotp*syn;
+				 	    			vecperp[2]=x[1][2]-dotp*szn;
+				 	    				
+				 	    			vecperpn = Math.sqrt(vecperp[0]*vecperp[0]+vecperp[1]*vecperp[1]+vecperp[2]*vecperp[2]);
+				 	    				
+				 	    			vecperp[0]/=vecperpn;
+				 	    			vecperp[1]/=vecperpn;
+				 	    			vecperp[2]/=vecperpn;
+
+				 	    			
+					 	    				exitlgt=lex2-lex1;
+						 	    			exitangle=exitlgt%bhsize;
+						 	    			exitangle=(2d*Math.PI/bhsize)*exitangle;
+						 	    			newang=Math.PI/2d+ang;
+						 	    			
+						 	    			pos[0]=Math.cos(exitangle)*sxn+Math.sin(exitangle)*vecperp[0];
+						 	    			pos[1]=Math.cos(exitangle)*syn+Math.sin(exitangle)*vecperp[1];
+						 	    			pos[2]=Math.cos(exitangle)*szn+Math.sin(exitangle)*vecperp[2];
+						 	    			
+						 	    			pos[0]*=1/ley2;
+						 	    			pos[1]*=1/ley2;
+						 	    			pos[2]*=1/ley2;	
+					 	    				
+					 	    			newv[0]=Math.cos(Math.PI+exitangle-newang)*sxn+Math.sin(Math.PI+exitangle-newang)*vecperp[0];
+					 	    			newv[1]=Math.cos(Math.PI+exitangle-newang)*syn+Math.sin(Math.PI+exitangle-newang)*vecperp[1];
+					 	    			newv[2]=Math.cos(Math.PI+exitangle-newang)*szn+Math.sin(Math.PI+exitangle-newang)*vecperp[2];
+					 	    			
+					 	    			
+					 	    			for(j=0;j<2;j++) 
+					 	    			{
+						 	    			dotp1=newv[0]*x[1][0]+newv[1]*x[1][1]+newv[2]*x[1][2];
+						 	    			dotp2=newv[0]*x[others[1][j]][0]+newv[1]*x[others[1][j]][1]+newv[2]*x[others[1][j]][2];
+						 	    			
+						 	    			proj[0]=x[1][0]*dotp1+x[others[1][j]][0]*dotp2;
+						 	    			proj[1]=x[1][1]*dotp1+x[others[1][j]][1]*dotp2;
+						 	    			proj[2]=x[1][2]*dotp1+x[others[1][j]][2]*dotp2;
+						 	    			
+						 	    			projn = Math.sqrt(proj[0]*proj[0]+proj[1]*proj[1]+proj[2]*proj[2]);
+					 	    				
+						 	    			proj[0]/=projn;
+						 	    			proj[1]/=projn;
+						 	    			proj[2]/=projn;
+						 	    			
+						 	    			tmpl=proj[0]*x[1][0]+proj[1]*x[1][1]+proj[2]*x[1][2];
+						 	    			if(Math.abs(tmpl)>1d) ang1=0;
+						 	    			else
+						 	    			{
+							 	    			ang1=Math.acos(tmpl);
+							 	    			ang1*=Math.signum(proj[0]*x[others[1][j]][0]+proj[1]*x[others[1][j]][1]+proj[2]*x[others[1][j]][2]);
+						 	    			}
+						 	    			for(i=0;i<3;i++)
+								    		{
+								    			newx[1][i]=x[1][i]*Math.cos(ang1)+Math.sin(ang1)*x[others[1][j]][i];
+								    			newx[others[1][j]][i]=x[others[1][j]][i]*Math.cos(ang1)-Math.sin(ang1)*x[1][i];
+								    			x[1][i]=newx[1][i];
+								    			x[others[1][j]][i]=newx[others[1][j]][i];
+								    		}
+						 	    			
+					 	    			}
 			 	    			}
 			 	    			
 			 	    			
 		    				}
-		    			}
 		    		}
 		    		
 		    		
@@ -809,12 +1356,7 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		    		if(mousx>0)
 		    		{
 		    			
-		    			if(holdz || holdx || holdc || holdv )
-		    			{
-		    				//
-		    			}
-		    			else
-		    			{
+		    			
 			    			for(i=0;i<n;i++)
 			    			{
 			    				newx[0][i]=x[0][i]*rcos+rsin*x[1][i];
@@ -822,17 +1364,12 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			    				x[0][i]=newx[0][i];
 			    				x[1][i]=newx[1][i];
 			    			}
-		    			}
+		    			
 		    		}
 		    		else if(mousx<0)
 		    		{
 		    			
-		    			if(holdz || holdx || holdc || holdv )
-		    			{
-		    				//
-		    			}
-		    			else
-		    			{
+		    			
 			    			for(i=0;i<n;i++)
 			    			{
 			    				newx[0][i]=x[0][i]*rcos-rsin*x[1][i];
@@ -840,42 +1377,31 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 			    				x[0][i]=newx[0][i];
 			    				x[1][i]=newx[1][i];
 			    			}
-		    			}
+		    			
 		    		}
 		    		
 		    		if(mousy<0)
 		    		{
-		    			if(holdz) tmpm=3;
-		    			else if(holdx) tmpm=4;
-		    			else if(holdc) tmpm=5;
-		    			else if(holdv) tmpm=6;
-
-		    			else tmpm=2;
+		    			
 		    		
 			    			for(i=0;i<n;i++)
 			    			{
-			    				newx[0][i]=x[0][i]*rcos+rsin*x[tmpm][i];
-			    				newx[tmpm][i]=x[tmpm][i]*rcos-rsin*x[0][i];
+			    				newx[0][i]=x[0][i]*rcos+rsin*x[2][i];
+			    				newx[2][i]=x[2][i]*rcos-rsin*x[0][i];
 			    				x[0][i]=newx[0][i];
-			    				x[tmpm][i]=newx[tmpm][i];
+			    				x[2][i]=newx[2][i];
 			    			}
 		    			
 		    		}
 		    		else if(mousy>0)
 		    		{
-		    			if(holdz) tmpm=3;
-		    			else if(holdx) tmpm=4;
-		    			else if(holdc) tmpm=5;
-		    			else if(holdv) tmpm=6;
-
-		    			else tmpm=2;
-		    			
+		    		
 			    			for(i=0;i<n;i++)
 			    			{
-			    				newx[0][i]=x[0][i]*rcos-rsin*x[tmpm][i];
-			    				newx[tmpm][i]=x[tmpm][i]*rcos+rsin*x[0][i];
+			    				newx[0][i]=x[0][i]*rcos-rsin*x[2][i];
+			    				newx[2][i]=x[2][i]*rcos+rsin*x[0][i];
 			    				x[0][i]=newx[0][i];
-			    				x[tmpm][i]=newx[tmpm][i];
+			    				x[2][i]=newx[2][i];
 			    			}
 		    			
 		    		}
@@ -943,8 +1469,7 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 				 			 	    				lex1=Math.sqrt(lerayon*lerayon - uhpy*uhpy)*lesign;
 				 			 	    				lex2=Math.sqrt(lerayon*lerayon-1);
 				 			 	    				
-				 			 	    				
-				 			 	    				
+				 			 	    			
 				 			 	    				
 				 			 	    				if(lesign<0 && lerayon>whsize)
 				 			 	    				{
@@ -1293,105 +1818,13 @@ public class whs extends JPanel implements KeyListener, FocusListener {
 		return ret;
 	}
 	
-	
-	public static double[] vecsub(double[] v1,double[] v2)
-	{
-		double[] ret = new double[n];
-		for(int i=0;i<n;i++) ret[i]=v1[i]-v2[i];
-		return ret;
-	}
-	
+
 	public static double veclgt(double[] v)
 	{
 		return (double)Math.sqrt(vecprod(v,v));
 	}
 	
-	public static double[] vecnorm(double[] v)
-	{
-		double prod = veclgt(v);
-		double[] ret = new double[n];
-		for(int i=0;i<n;i++) ret[i]=v[i]/prod;
-		return ret;
-	}
-	
-	public static void displayvec(int[] v)
-	{
-		int i;
-		for(i=0;i<n-1;i++) System.out.print(v[i]+",");
-		System.out.println(v[i]);
-	}
-	
-	public static void displayvecf(double[] v)
-	{
-		int i;
-		for(i=0;i<n-1;i++) System.out.print(v[i]+",");
-		System.out.println(v[i]);
-	}
-	
-	
 
-	public static void mult(double[] v, int d, double a, double b)
-	{
-		v[d+1]=b*v[d];
-		for(int i=d;i>0;i--) 
-		{
-			v[i]*=a;
-			v[i]+=b*v[i-1];
-		}
-		v[0]=a*v[0];
-
-	}
-	
-	public static byte[] rnbw(double x, double a)
-	{
-		byte[] ret = new byte[3];
-		double tmp;
-		
-		if(x<0) x*=-1d;
-		x=(x*a)%1;
-		tmp=x%(1d/6d);
-		
-		if(x<1d/6d)
-		{
-			ret[0]=(byte)255;
-			ret[1]=(byte)(1530d*tmp);
-		}
-		else if(x<1d/3d)
-		{
-			ret[1]=(byte)255;
-			ret[0]=(byte)(255d-1530d*tmp);
-		}
-		else if(x<0.5d)
-		{
-			ret[1]=(byte)255;
-			ret[2]=(byte)(1530d*tmp);
-		}
-		else if(x<2d/3d)
-		{
-			ret[2]=(byte)255;
-			ret[1]=(byte)(255d-1530d*tmp);
-		}
-		else if(x<5d/6d)
-		{
-			ret[2]=(byte)255;
-			ret[0]=(byte)(1530d*tmp);
-		}
-		else
-		{
-			ret[0]=(byte)255;
-			ret[2]=(byte)(255d-1530d*tmp);
-		}
-		
-		return ret;
-	}
-	
-	public static double scalprod(double[] v1, double[] v2)
-	{
-		int i;
-		double ret=0;
-		for(i=0;i<n;i++) ret+=v1[i]*v2[i];
-		return ret;
-	}
 
 	public static double arsinh(double x)
 	{
