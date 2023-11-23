@@ -16,9 +16,9 @@ s: go backward
 
 d: go right
 
-z: increase blackhole curvature
+z: increase wormhole curvature
 
-x: decrease blackhole curvature
+x: decrease wormhole curvature
 
 c: increase wormhole distance
 
